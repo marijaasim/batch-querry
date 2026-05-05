@@ -1,6 +1,7 @@
 package com.marija.quarry_batch.model;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 public class Invoice {
@@ -10,16 +11,18 @@ public class Invoice {
     private double totalAmount;
     private Long userId;
     private Long buyerId;
+    private List<InvoiceItem> items;
 
     public Invoice() {
     }
 
-    public Invoice(Long id, Date date, double totalAmount, Long userId, Long buyerId) {
+    public Invoice(Long id, Date date, double totalAmount, Long userId, Long buyerId, List<InvoiceItem> items) {
         this.id = id;
         this.date = date;
         this.totalAmount = totalAmount;
         this.userId = userId;
         this.buyerId = buyerId;
+        this.items = items;
     }
 
     public Long getId() {
@@ -60,6 +63,14 @@ public class Invoice {
 
     public void setBuyerId(Long buyerId) {
         this.buyerId = buyerId;
+    }
+
+    public List<InvoiceItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<InvoiceItem> items) {
+        this.items = items;
     }
 
     @Override

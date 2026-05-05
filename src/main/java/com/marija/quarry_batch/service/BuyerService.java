@@ -33,4 +33,13 @@ public class BuyerService {
     public List<Buyer> findAll() {
         return buyerRepository.findAll();
     }
+
+    public void updateBuyer(Buyer buyer) {
+        buyerRepository.update(buyer);
+    }
+
+    public void deleteBuyer(Long id) {
+        buyerRepository.delete(id);
+    }
+
 }

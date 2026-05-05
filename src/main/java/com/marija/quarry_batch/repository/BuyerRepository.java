@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -49,7 +50,7 @@ public class BuyerRepository {
 
         String type = rs.getString("buyer_type");
 
-        if ("INDIVIDUAL".equals(type)) {
+        if ("INDIVIDUAL".equalsIgnoreCase(type)) {
             IndividualBuyer b = new IndividualBuyer();
             b.setId(rs.getLong("id"));
             b.setName(rs.getString("name"));
@@ -57,7 +58,7 @@ public class BuyerRepository {
             b.setEmail(rs.getString("email"));
             b.setPersonalId(rs.getString("personal_id"));
             return b;
-        } else {
+        } else if ("COMPANY".equalsIgnoreCase(type)) {
             CompanyBuyer b = new CompanyBuyer();
             b.setId(rs.getLong("id"));
             b.setName(rs.getString("name"));
@@ -65,6 +66,8 @@ public class BuyerRepository {
             b.setEmail(rs.getString("email"));
             b.setTaxId(rs.getString("tax_id"));
             return b;
+        } else {
+            throw new RuntimeException("Unknown buyer type: " + type);
         }
     }
 
@@ -76,20 +79,70 @@ public class BuyerRepository {
 
     public List<Buyer> search(String name, String email, String type) {
 
-        String sql = """
-        SELECT * FROM buyer
-        WHERE (LOWER(name) LIKE LOWER(?) OR ? IS NULL)
-        AND (LOWER(email) LIKE LOWER(?) OR ? IS NULL)
-        AND (buyer_type = ? OR ? IS NULL)
-    """;
+        StringBuilder sql = new StringBuilder("SELECT * FROM buyer WHERE 1=1");
+        List<Object> params = new ArrayList<>();
 
-        String nameParam = (name == null || name.isBlank()) ? null : "%" + name + "%";
-        String emailParam = (email == null || email.isBlank()) ? null : "%" + email + "%";
+        if (name != null && !name.isBlank()) {
+            sql.append(" AND LOWER(name) LIKE LOWER(?)");
+            params.add("%" + name + "%");
+        }
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> mapBuyer(rs),
-                nameParam, nameParam,
-                emailParam, emailParam,
-                type, type
+        if (email != null && !email.isBlank()) {
+            sql.append(" AND LOWER(email) LIKE LOWER(?)");
+            params.add("%" + email + "%");
+        }
+
+        if (type != null && !type.isBlank()) {
+            sql.append(" AND buyer_type = ?");
+            params.add(type);
+        }
+
+        return jdbcTemplate.query(
+                sql.toString(),
+                params.toArray(),
+                (rs, rowNum) -> mapBuyer(rs)
         );
     }
+
+    public void update(Buyer buyer) {
+
+        if (buyer instanceof IndividualBuyer) {
+            String sql = """
+            UPDATE buyer 
+            SET name = ?, phone_number = ?, email = ?, personal_id = ?, tax_id = NULL, buyer_type = 'INDIVIDUAL'
+            WHERE id = ?
+        """;
+
+            jdbcTemplate.update(
+                    sql,
+                    buyer.getName(),
+                    buyer.getPhoneNumber(),
+                    buyer.getEmail(),
+                    ((IndividualBuyer) buyer).getPersonalId(),
+                    buyer.getId()
+            );
+
+        } else if (buyer instanceof CompanyBuyer) {
+            String sql = """
+            UPDATE buyer 
+            SET name = ?, phone_number = ?, email = ?, tax_id = ?, personal_id = NULL, buyer_type = 'COMPANY'
+            WHERE id = ?
+        """;
+
+            jdbcTemplate.update(
+                    sql,
+                    buyer.getName(),
+                    buyer.getPhoneNumber(),
+                    buyer.getEmail(),
+                    ((CompanyBuyer) buyer).getTaxId(),
+                    buyer.getId()
+            );
+        }
+    }
+
+    public void delete(Long id) {
+        String sql = "DELETE FROM buyer WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
 }
