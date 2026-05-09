@@ -12,9 +12,20 @@ public class Block {
     C - many cracks|bad color|deformations
 
     category:
-    1 - block length from 250cm
-    2 - block length from 220cm to 250cm
-    3 - block length below 220cm
+    1 - volume > 6.0 m³
+    2 - volume 3.0 - 6.0 m³
+    3 - volume < 3.0 m³
+
+    price:
+    1A - 200 e/t
+    1B - 160 e/t
+    1C - 120 e/t
+    2A - 180 e/t
+    2B - 140 e/t
+    2C - 100 e/t
+    3A - 160 e/t
+    3B - 120 e/t
+    3C - 80 e/t
 
     */
 

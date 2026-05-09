@@ -13,6 +13,9 @@ public class Invoice {
     private Long buyerId;
     private List<InvoiceItem> items;
 
+    private String userName;
+    private String buyerName;
+
     public Invoice() {
     }
 
@@ -71,6 +74,22 @@ public class Invoice {
 
     public void setItems(List<InvoiceItem> items) {
         this.items = items;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getBuyerName() {
+        return buyerName;
+    }
+
+    public void setBuyerName(String buyerName) {
+        this.buyerName = buyerName;
     }
 
     @Override

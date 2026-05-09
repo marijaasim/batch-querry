@@ -8,6 +8,7 @@ public abstract class Buyer {
     protected String name;
     protected String phoneNumber;
     protected String email;
+    protected String buyerType;
 
     public Buyer() {
     }
@@ -49,6 +50,14 @@ public abstract class Buyer {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getBuyerType() {
+        return buyerType;
+    }
+
+    public void setBuyerType(String buyerType) {
+        this.buyerType = buyerType;
     }
 
     @Override

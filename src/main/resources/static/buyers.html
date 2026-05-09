@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quarry Management — Buyers</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .navbar {
+            background: #16213e;
+            border-bottom: 2px solid #e94560;
+            padding: 16px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .navbar h1 {
+            color: #e94560;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid #a0a0b0;
+            color: #a0a0b0;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .main {
+            padding: 32px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #e94560;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c73652;
+        }
+
+        .btn-secondary {
+            background: #0f3460;
+            color: #a0a0b0;
+            border: 1px solid #1a4a7a;
+        }
+
+        .btn-secondary:hover {
+            border-color: #e94560;
+            color: white;
+        }
+
+        .btn-danger {
+            background: transparent;
+            border: 1px solid #e94560;
+            color: #e94560;
+        }
+
+        .btn-danger:hover {
+            background: #e94560;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .filters-panel {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+
+        .filters-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0a0b0;
+            margin-bottom: 16px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #a0a0b0;
+            margin-bottom: 6px;
+        }
+
+        .filter-group input {
+            width: 100%;
+            padding: 8px 12px;
+            background: #0f3460;
+            border: 1px solid #1a4a7a;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .filter-group input:focus {
+            border-color: #e94560;
+        }
+
+        .checkboxes {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #a0a0b0;
+            cursor: pointer;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .checkboxes input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #e94560;
+            cursor: pointer;
+        }
+
+        .table-container {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #0f3460;
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0a0b0;
+        }
+
+        td {
+            padding: 14px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid #0f3460;
+            color: #e0e0e0;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(233, 69, 96, 0.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: #a0a0b0;
+        }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-individual {
+            background: rgba(74, 144, 217, 0.2);
+            color: #4a90d9;
+            border: 1px solid #4a90d9;
+        }
+
+        .badge-company {
+            background: rgba(155, 89, 182, 0.2);
+            color: #9b59b6;
+            border: 1px solid #9b59b6;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e94560;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            color: #a0a0b0;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .btn-close:hover {
+            color: #ffffff;
+        }
+
+        .type-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .type-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #0f3460;
+            background: #0f3460;
+            color: #a0a0b0;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .type-btn.active-individual {
+            border-color: #4a90d9;
+            color: #4a90d9;
+            background: rgba(74,144,217,0.1);
+        }
+
+        .type-btn.active-company {
+            border-color: #9b59b6;
+            color: #9b59b6;
+            background: rgba(155,89,182,0.1);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #a0a0b0;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            padding: 10px 14px;
+            background: #0f3460;
+            border: 1px solid #1a4a7a;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #e94560;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .confirm-overlay.active {
+            display: flex;
+        }
+
+        .confirm-box {
+            background: #16213e;
+            border: 1px solid #e94560;
+            border-radius: 12px;
+            padding: 32px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .confirm-box p {
+            color: #a0a0b0;
+            margin-bottom: 24px;
+            font-size: 15px;
+        }
+
+        .confirm-box h3 {
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-left">
+        <a href="/index.html" class="btn-back">← Back</a>
+        <h1>Quarry Management</h1>
+    </div>
+</nav>
+
+<div class="main">
+    <div class="top-bar">
+        <div class="page-title">Buyers</div>
+        <button class="btn btn-primary" onclick="openCreateModal()">+ New Buyer</button>
+    </div>
+
+    <div class="filters-panel">
+        <div class="filters-title">🔍 Search & Filter</div>
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label>Name</label>
+                <input type="text" id="filterName" placeholder="Search by name..." oninput="applyFilters()" />
+            </div>
+            <div class="filter-group">
+                <label>Email</label>
+                <input type="text" id="filterEmail" placeholder="Search by email..." oninput="applyFilters()" />
+            </div>
+            <div class="filter-group">
+                <label>Type</label>
+                <div class="checkboxes">
+                    <label><input type="checkbox" id="filterIndividual" checked onchange="applyFilters()" /> Individual</label>
+                    <label><input type="checkbox" id="filterCompany" checked onchange="applyFilters()" /> Company</label>
+                </div>
+            </div>
+            <div class="filter-group">
+                <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Type</th>
+                <th>ID Number</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="buyersTable">
+            <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CREATE / EDIT MODAL -->
+<div class="modal-overlay" id="buyerModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="modalTitle">New Buyer</div>
+            <button class="btn-close" onclick="closeModal()">✕</button>
+        </div>
+
+        <div class="type-selector" id="typeSelector">
+            <div class="type-btn active-individual" id="btnIndividual" onclick="selectType('INDIVIDUAL')">👤 Individual</div>
+            <div class="type-btn" id="btnCompany" onclick="selectType('COMPANY')">🏢 Company</div>
+        </div>
+
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="buyerName" placeholder="Enter name..." />
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="buyerEmail" placeholder="Enter email..." />
+        </div>
+        <div class="form-group">
+            <label>Phone</label>
+            <input type="text" id="buyerPhone" placeholder="Enter phone number..." />
+        </div>
+        <div class="form-group" id="fieldPersonalId">
+            <label>Personal ID</label>
+            <input type="text" id="buyerPersonalId" placeholder="Enter personal ID..." />
+        </div>
+        <div class="form-group" id="fieldTaxId" style="display:none;">
+            <label>Tax ID</label>
+            <input type="text" id="buyerTaxId" placeholder="Enter tax ID..." />
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveBuyer()">Save Buyer</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+        <h3>Delete Buyer</h3>
+        <p>Are you sure you want to delete this buyer? This action cannot be undone.</p>
+        <div class="confirm-actions">
+            <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+            <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) window.location.href = '/login.html';
+
+    let buyers = [];
+    let selectedType = 'INDIVIDUAL';
+    let editingBuyerId = null;
+    let deletingBuyerId = null;
+
+    async function init() {
+        await loadBuyers();
+    }
+
+    async function loadBuyers() {
+        const res = await fetch('/buyers');
+        buyers = await res.json();
+        renderTable(buyers);
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('buyersTable');
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No buyers found.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(b => `
+            <tr>
+                <td>#${b.id}</td>
+                <td>${b.name}</td>
+                <td>${b.email || '—'}</td>
+                <td>${b.phoneNumber || '—'}</td>
+                <td><span class="badge badge-${(b.buyerType || '').toLowerCase()}">${b.buyerType || '—'}</span></td>
+                <td>${b.personalId || b.taxId || '—'}</td>
+                <td style="display:flex; gap:8px;">
+                    <button class="btn btn-secondary btn-sm" onclick="openEditModal(${b.id})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="openConfirmDelete(${b.id})">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function applyFilters() {
+        const name = document.getElementById('filterName').value.trim();
+        const email = document.getElementById('filterEmail').value.trim();
+        const individual = document.getElementById('filterIndividual').checked;
+        const company = document.getElementById('filterCompany').checked;
+
+        let type = '';
+        if (individual && !company) type = 'INDIVIDUAL';
+        if (company && !individual) type = 'COMPANY';
+
+        const params = new URLSearchParams();
+        if (name) params.append('name', name);
+        if (email) params.append('email', email);
+        if (type) params.append('type', type);
+
+        const hasFilters = name || email || !(individual && company);
+        const url = hasFilters ? `/buyers/search?${params}` : '/buyers';
+
+        const res = await fetch(url);
+        const data = await res.json();
+        renderTable(data);
+    }
+
+    function clearFilters() {
+        document.getElementById('filterName').value = '';
+        document.getElementById('filterEmail').value = '';
+        document.getElementById('filterIndividual').checked = true;
+        document.getElementById('filterCompany').checked = true;
+        renderTable(buyers);
+    }
+
+    function selectType(type) {
+        selectedType = type;
+        document.getElementById('btnIndividual').className = 'type-btn' + (type === 'INDIVIDUAL' ? ' active-individual' : '');
+        document.getElementById('btnCompany').className = 'type-btn' + (type === 'COMPANY' ? ' active-company' : '');
+        document.getElementById('fieldPersonalId').style.display = type === 'INDIVIDUAL' ? 'flex' : 'none';
+        document.getElementById('fieldTaxId').style.display = type === 'COMPANY' ? 'flex' : 'none';
+    }
+
+    function openCreateModal() {
+        editingBuyerId = null;
+        selectedType = 'INDIVIDUAL';
+        document.getElementById('modalTitle').textContent = 'New Buyer';
+        document.getElementById('typeSelector').style.display = 'flex';
+        document.getElementById('buyerName').value = '';
+        document.getElementById('buyerEmail').value = '';
+        document.getElementById('buyerPhone').value = '';
+        document.getElementById('buyerPersonalId').value = '';
+        document.getElementById('buyerTaxId').value = '';
+        selectType('INDIVIDUAL');
+        document.getElementById('buyerModal').classList.add('active');
+    }
+
+    function openEditModal(id) {
+        console.log('editing id:', id);
+        console.log('buyers:', buyers);
+        const b = buyers.find(b => b.id == id);
+        console.log('found buyer:', b);
+        if (!b) return;
+        editingBuyerId = id;
+        document.getElementById('modalTitle').textContent = `Edit Buyer #${id}`;
+        document.getElementById('typeSelector').style.display = 'none';
+        document.getElementById('buyerName').value = b.name || '';
+        document.getElementById('buyerEmail').value = b.email || '';
+        document.getElementById('buyerPhone').value = b.phoneNumber || '';
+
+        selectedType = b.buyerType;
+        if (b.buyerType === 'INDIVIDUAL') {
+            document.getElementById('buyerPersonalId').value = b.personalId || '';
+            document.getElementById('fieldPersonalId').style.display = 'flex';
+            document.getElementById('fieldTaxId').style.display = 'none';
+        } else {
+            document.getElementById('buyerTaxId').value = b.taxId || '';
+            document.getElementById('fieldPersonalId').style.display = 'none';
+            document.getElementById('fieldTaxId').style.display = 'flex';
+        }
+        document.getElementById('buyerModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('buyerModal').classList.remove('active');
+    }
+
+    async function saveBuyer() {
+        const name = document.getElementById('buyerName').value.trim();
+        const email = document.getElementById('buyerEmail').value.trim();
+        const phone = document.getElementById('buyerPhone').value.trim();
+        const personalId = document.getElementById('buyerPersonalId').value.trim();
+        const taxId = document.getElementById('buyerTaxId').value.trim();
+
+        if (!name) { alert('Please enter a name.'); return; }
+
+        if (editingBuyerId) {
+            const body = {
+                id: editingBuyerId,
+                type: selectedType,
+                name,
+                email,
+                phoneNumber: phone,
+                personalId: selectedType === 'INDIVIDUAL' ? personalId : null,
+                taxId: selectedType === 'COMPANY' ? taxId : null
+            };
+
+            await fetch('/buyers/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+        } else {
+            const url = selectedType === 'INDIVIDUAL' ? '/buyers/individual' : '/buyers/company';
+            const body = {
+                name,
+                email,
+                phoneNumber: phone,
+                personalId: selectedType === 'INDIVIDUAL' ? personalId : null,
+                taxId: selectedType === 'COMPANY' ? taxId : null
+            };
+
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+        }
+
+        closeModal();
+        await loadBuyers();
+    }
+
+    function openConfirmDelete(id) {
+        deletingBuyerId = id;
+        document.getElementById('confirmOverlay').classList.add('active');
+    }
+
+    function closeConfirm() {
+        document.getElementById('confirmOverlay').classList.remove('active');
+        deletingBuyerId = null;
+    }
+
+    async function confirmDelete() {
+        await fetch(`/buyers/${deletingBuyerId}`, { method: 'DELETE' });
+        closeConfirm();
+        await loadBuyers();
+    }
+
+    init();
+</script>
+
+</body>
+</html>

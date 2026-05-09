@@ -22,6 +22,18 @@ public class InvoiceController {
         return invoiceService.getAll();
     }
 
+    @GetMapping("/search")
+    public List<Invoice> search(
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String buyerName,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(required = false) Double minAmount,
+            @RequestParam(required = false) Double maxAmount) {
+
+        return invoiceService.search(userName, buyerName, dateFrom, dateTo, minAmount, maxAmount);
+    }
+
     @GetMapping("/{id}")
     public Invoice getById(@PathVariable Long id) {
         return invoiceService.getById(id);

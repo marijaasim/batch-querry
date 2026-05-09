@@ -21,6 +21,10 @@ public class InvoiceService {
         return invoiceRepository.findAll();
     }
 
+    public List<Invoice> search(String userName, String buyerName, String dateFrom, String dateTo, Double minAmount, Double maxAmount) {
+        return invoiceRepository.search(userName, buyerName, dateFrom, dateTo, minAmount, maxAmount);
+    }
+
     public Invoice getById(Long id) {
         return invoiceRepository.findById(id);
     }

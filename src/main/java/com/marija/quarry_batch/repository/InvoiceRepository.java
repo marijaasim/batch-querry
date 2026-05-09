@@ -5,6 +5,7 @@ import com.marija.quarry_batch.model.InvoiceItem;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -39,13 +40,83 @@ public class InvoiceRepository {
             i.setTotalAmount(rs.getDouble("total_amount"));
             i.setUserId(rs.getLong("user_id"));
             i.setBuyerId(rs.getLong("buyer_id"));
+            i.setUserName(rs.getString("user_name"));
+            i.setBuyerName(rs.getString("buyer_name"));
             return i;
         });
     }
 
+    public List<Invoice> search(String userName, String buyerName, String dateFrom, String dateTo, Double minAmount, Double maxAmount) {
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT i.id, i.date, i.total_amount, i.user_id, i.buyer_id,
+               u.name AS user_name, b.name AS buyer_name
+        FROM invoice i
+        JOIN users u ON i.user_id = u.id
+        JOIN buyer b ON i.buyer_id = b.id
+        WHERE 1=1
+    """);
+
+        List<Object> params = new ArrayList<>();
+
+        if (userName != null && !userName.isBlank()) {
+            sql.append(" AND LOWER(u.name) LIKE LOWER(?)");
+            params.add("%" + userName + "%");
+        }
+        if (buyerName != null && !buyerName.isBlank()) {
+            sql.append(" AND LOWER(b.name) LIKE LOWER(?)");
+            params.add("%" + buyerName + "%");
+        }
+        if (dateFrom != null && !dateFrom.isBlank()) {
+            sql.append(" AND i.date >= ?::timestamp");
+            params.add(dateFrom);
+        }
+        if (dateTo != null && !dateTo.isBlank()) {
+            sql.append(" AND i.date <= ?::timestamp");
+            params.add(dateTo);
+        }
+        if (minAmount != null) {
+            sql.append(" AND i.total_amount >= ?");
+            params.add(minAmount);
+        }
+        if (maxAmount != null) {
+            sql.append(" AND i.total_amount <= ?");
+            params.add(maxAmount);
+        }
+
+        return jdbcTemplate.query(
+                sql.toString(),
+                params.toArray(),
+                (rs, rowNum) -> {
+                    Invoice i = new Invoice();
+                    i.setId(rs.getLong("id"));
+                    i.setDate(rs.getDate("date"));
+                    i.setTotalAmount(rs.getDouble("total_amount"));
+                    i.setUserId(rs.getLong("user_id"));
+                    i.setBuyerId(rs.getLong("buyer_id"));
+                    i.setUserName(rs.getString("user_name"));
+                    i.setBuyerName(rs.getString("buyer_name"));
+                    return i;
+                }
+        );
+    }
+
     public Invoice findById(Long id) {
 
-        String invoiceSql = "SELECT * FROM invoice WHERE id = ?";
+        String invoiceSql = """
+        SELECT 
+            i.id,
+            i.date,
+            i.total_amount,
+            i.user_id,
+            i.buyer_id,
+            u.name AS user_name,
+            b.name AS buyer_name
+        FROM invoice i
+        JOIN users u ON i.user_id = u.id
+        JOIN buyer b ON i.buyer_id = b.id
+        WHERE i.id = ?
+    """;
 
         Invoice invoice = jdbcTemplate.queryForObject(
                 invoiceSql,
@@ -57,6 +128,8 @@ public class InvoiceRepository {
                     i.setTotalAmount(rs.getDouble("total_amount"));
                     i.setUserId(rs.getLong("user_id"));
                     i.setBuyerId(rs.getLong("buyer_id"));
+                    i.setUserName(rs.getString("user_name"));
+                    i.setBuyerName(rs.getString("buyer_name"));
                     return i;
                 }
         );

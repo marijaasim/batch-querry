@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quarry Management — Positions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .navbar {
+            background: #16213e;
+            border-bottom: 2px solid #e94560;
+            padding: 16px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .navbar h1 {
+            color: #e94560;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid #a0a0b0;
+            color: #a0a0b0;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .main {
+            padding: 32px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #e94560;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c73652;
+        }
+
+        .btn-secondary {
+            background: #0f3460;
+            color: #a0a0b0;
+            border: 1px solid #1a4a7a;
+        }
+
+        .btn-secondary:hover {
+            border-color: #e94560;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .table-container {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #0f3460;
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0a0b0;
+        }
+
+        td {
+            padding: 14px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid #0f3460;
+            color: #e0e0e0;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(233, 69, 96, 0.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: #a0a0b0;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e94560;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            color: #a0a0b0;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .btn-close:hover {
+            color: #ffffff;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #a0a0b0;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            padding: 10px 14px;
+            background: #0f3460;
+            border: 1px solid #1a4a7a;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #e94560;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-left">
+        <a href="/index.html" class="btn-back">← Back</a>
+        <h1>Quarry Management</h1>
+    </div>
+</nav>
+
+<div class="main">
+    <div class="top-bar">
+        <div class="page-title">Positions</div>
+        <button class="btn btn-primary" onclick="openCreateModal()">+ New Position</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+            </thead>
+            <tbody id="positionsTable">
+            <tr><td colspan="2" class="empty-state">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CREATE MODAL -->
+<div class="modal-overlay" id="positionModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">New Position</div>
+            <button class="btn-close" onclick="closeModal()">✕</button>
+        </div>
+
+        <div class="form-group">
+            <label>Position Name</label>
+            <input type="text" id="positionName" placeholder="Enter position name..." />
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="savePosition()">Save Position</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) window.location.href = '/login.html';
+
+    async function init() {
+        await loadPositions();
+    }
+
+    async function loadPositions() {
+        const res = await fetch('/positions');
+        const positions = await res.json();
+        renderTable(positions);
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('positionsTable');
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" class="empty-state">No positions found.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(p => `
+            <tr>
+                <td>#${p.id}</td>
+                <td>${p.name}</td>
+            </tr>
+        `).join('');
+    }
+
+    function openCreateModal() {
+        document.getElementById('positionName').value = '';
+        document.getElementById('positionModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('positionModal').classList.remove('active');
+    }
+
+    async function savePosition() {
+        const name = document.getElementById('positionName').value.trim();
+        if (!name) { alert('Please enter a position name.'); return; }
+
+        await fetch('/positions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+
+        closeModal();
+        await loadPositions();
+    }
+
+    init();
+</script>
+
+</body>
+</html>
