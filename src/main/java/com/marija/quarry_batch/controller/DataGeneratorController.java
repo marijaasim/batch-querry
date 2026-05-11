@@ -33,9 +33,7 @@ public class DataGeneratorController {
 
     @DeleteMapping("/clear")
     public String clearAll() {
-        dataGenerator.clearInvoices();
-        dataGenerator.clearBlocks();
-        dataGenerator.clearBuyers();
+        dataGenerator.clearAll();
         return "All data cleared.";
     }
 

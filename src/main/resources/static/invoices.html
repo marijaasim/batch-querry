@@ -481,298 +481,297 @@
 
 <script>
     const user = JSON.parse(localStorage.getItem('user'));
-if (!user) window.location.href = '/login.html';
+    if (!user) window.location.href = '/login.html';
 
-let invoices = [];
-let buyers = [];
-let users = [];
-let blocks = [];
-let currentItems = [];
-let editingInvoiceId = null;
-let dataLoaded = false;
+    let invoices = [];
+    let buyers = [];
+    let users = [];
+    let blocks = [];
+    let currentItems = [];
+    let editingInvoiceId = null;
+    let dataLoaded = false;
 
-async function init() {
-    await loadInvoices();
-    await loadBuyers();
-}
-
-async function loadInvoices() {
-    const res = await fetch('/invoices');
-    invoices = await res.json();
-    renderTable(invoices);
-}
-
-async function loadBuyers() {
-    const res = await fetch('/buyers');
-    buyers = await res.json();
-}
-
-async function loadModalData() {
-    if (dataLoaded) return;
-
-    const resUsers = await fetch('/users');
-    users = await resUsers.json();
-    const selUser = document.getElementById('invoiceUser');
-    selUser.innerHTML = '<option value="">Select user...</option>';
-    users.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u.id;
-        opt.textContent = u.name;
-        selUser.appendChild(opt);
-    });
-
-    const selBuyer = document.getElementById('invoiceBuyer');
-    selBuyer.innerHTML = '<option value="">Select buyer...</option>';
-    buyers.forEach(b => {
-        const opt = document.createElement('option');
-        opt.value = b.id;
-        opt.textContent = b.name;
-        selBuyer.appendChild(opt);
-    });
-
-    await loadBlocks();
-
-    dataLoaded = true;
-}
-
-function renderTable(data) {
-    const tbody = document.getElementById('invoicesTable');
-    if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No invoices found.</td></tr>';
-        return;
+    async function init() {
+        await loadInvoices();
+        await loadBuyers();
     }
-    tbody.innerHTML = data.map(inv => `
-        <tr>
-            <td>#${inv.id}</td>
-            <td>${inv.date ? inv.date.substring(0, 10) : '—'}</td>
-            <td>${inv.buyerName || '—'}</td>
-            <td>${inv.userName || '—'}</td>
-            <td class="amount">€ ${inv.totalAmount.toFixed(2)}</td>
-            <td>
-                <button class="btn btn-secondary btn-sm" onclick="openEditModal(${inv.id})">Edit</button>
-            </td>
-        </tr>
-    `).join('');
-}
 
-function getBuyerName(id) {
-    const b = buyers.find(b => b.id == id);
-    return b ? b.name : '—';
-}
-
-function getUserName(id) {
-    const u = users.find(u => u.id == id);
-    return u ? u.name : '—';
-}
-
-async function applyFilters() {
-    const userName = document.getElementById('filterUser').value.trim();
-    const buyerName = document.getElementById('filterBuyer').value.trim();
-    const dateFrom = document.getElementById('filterDateFrom').value;
-    const dateTo = document.getElementById('filterDateTo').value;
-    const minAmount = document.getElementById('filterMinAmount').value;
-    const maxAmount = document.getElementById('filterMaxAmount').value;
-
-    const params = new URLSearchParams();
-    if (userName) params.append('userName', userName);
-    if (buyerName) params.append('buyerName', buyerName);
-    if (dateFrom) params.append('dateFrom', dateFrom);
-    if (dateTo) params.append('dateTo', dateTo);
-    if (minAmount) params.append('minAmount', minAmount);
-    if (maxAmount) params.append('maxAmount', maxAmount);
-
-    const hasFilters = [...params].length > 0;
-    const url = hasFilters ? `/invoices/search?${params}` : '/invoices';
-
-    const res = await fetch(url);
-    const data = await res.json();
-    renderTable(data);
-}
-
-function clearFilters() {
-    document.getElementById('filterUser').value = '';
-    document.getElementById('filterBuyer').value = '';
-    document.getElementById('filterDateFrom').value = '';
-    document.getElementById('filterDateTo').value = '';
-    document.getElementById('filterMinAmount').value = '';
-    document.getElementById('filterMaxAmount').value = '';
-    renderTable(invoices);
-}
-
-async function openCreateModal() {
-    await loadModalData();
-    editingInvoiceId = null;
-    currentItems = [];
-    document.getElementById('modalTitle').textContent = 'New Invoice';
-    document.getElementById('invoiceDate').value = '';
-    document.getElementById('invoiceBuyer').value = '';
-    document.getElementById('invoiceUser').value = '';
-    renderItems();
-    updateTotal();
-    document.getElementById('invoiceModal').classList.add('active');
-}
-
-async function openEditModal(id) {
-    await loadModalData();
-    editingInvoiceId = id;
-    document.getElementById('modalTitle').textContent = `Edit Invoice #${id}`;
-
-    const res = await fetch(`/invoices/${id}`);
-    const inv = await res.json();
-
-    document.getElementById('invoiceDate').value = inv.date ? inv.date.substring(0, 10) : '';
-    document.getElementById('invoiceBuyer').value = inv.buyerId;
-    document.getElementById('invoiceUser').value = inv.userId;
-
-    currentItems = inv.items ? inv.items.map(item => ({
-        blockId: item.blockId,
-        price: item.price
-    })) : [];
-
-    renderItems();
-    updateTotal();
-    document.getElementById('invoiceModal').classList.add('active');
-}
-
-function closeModal() {
-    document.getElementById('invoiceModal').classList.remove('active');
-}
-
-const PRICES = {
-    'A': { '1': 200, '2': 180, '3': 160 },
-    'B': { '1': 160, '2': 140, '3': 120 },
-    'C': { '1': 120, '2': 100, '3': 80  }
-};
-
-function calculatePrice(block) {
-    const pricePerTon = PRICES[block.qualityClass]?.[block.category] ?? 100;
-    const massInTons = block.mass / 1000;
-    return Math.round(pricePerTon * massInTons * 100) / 100;
-}
-
-async function loadBlocks() {
-    const res = await fetch('/blocks');
-    blocks = await res.json();
-    renderBlocksTable();
-}
-
-function renderBlocksTable() {
-    const tbody = document.getElementById('blocksTableBody');
-    if (!blocks || blocks.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#a0a0b0; padding:16px;">No blocks available.</td></tr>';
-        return;
+    async function loadInvoices() {
+        const res = await fetch('/invoices');
+        invoices = await res.json();
+        renderTable(invoices);
     }
-    tbody.innerHTML = blocks.map(b => {
-        const price = calculatePrice(b);
-        return `
-            <tr style="cursor:pointer;" onmouseover="this.style.background='rgba(233,69,96,0.08)'" onmouseout="this.style.background=''">
-                <td>#${b.id}</td>
-                <td>${b.length} × ${b.width} × ${b.height}</td>
-                <td>${(b.mass / 1000).toFixed(2)}</td>
-                <td>${b.qualityClass}</td>
-                <td>${b.category}</td>
-                <td class="amount">€ ${price.toFixed(2)}</td>
-                <td><button class="btn btn-success btn-sm" onclick="addItem(${b.id}, ${price})">+ Add</button></td>
+
+    async function loadBuyers() {
+        const res = await fetch('/buyers');
+        buyers = await res.json();
+    }
+
+    async function loadModalData() {
+        if (dataLoaded) return;
+
+        const resUsers = await fetch('/users');
+        users = await resUsers.json();
+        const selUser = document.getElementById('invoiceUser');
+        selUser.innerHTML = '<option value="">Select user...</option>';
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.id;
+            opt.textContent = u.name;
+            selUser.appendChild(opt);
+        });
+
+        const selBuyer = document.getElementById('invoiceBuyer');
+        selBuyer.innerHTML = '<option value="">Select buyer...</option>';
+        buyers.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = b.name;
+            selBuyer.appendChild(opt);
+        });
+
+        await loadBlocks();
+
+        dataLoaded = true;
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('invoicesTable');
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No invoices found.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(inv => `
+            <tr>
+                <td>#${inv.id}</td>
+                <td>${inv.date ? inv.date.substring(0, 10) : '—'}</td>
+                <td>${inv.buyerName || '—'}</td>
+                <td>${inv.userName || '—'}</td>
+                <td class="amount">€ ${inv.totalAmount.toFixed(2)}</td>
+                <td>
+                    <button class="btn btn-secondary btn-sm" onclick="openEditModal(${inv.id})">Edit</button>
+                </td>
             </tr>
-        `;
-    }).join('');
-}
-
-function addItem(blockId, price) {
-    const alreadyAdded = currentItems.find(i => i.blockId === blockId);
-    if (alreadyAdded) {
-        alert('This block is already added to the invoice.');
-        return;
+        `).join('');
     }
-    currentItems.push({ blockId, price });
-    renderItems();
-    updateTotal();
-}
 
-function removeItem(index) {
-    currentItems.splice(index, 1);
-    renderItems();
-    updateTotal();
-}
-
-function renderItems() {
-    const tbody = document.getElementById('itemsTable');
-    if (currentItems.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#a0a0b0;padding:20px;">No items added yet.</td></tr>`;
-        return;
+    function getBuyerName(id) {
+        const b = buyers.find(b => b.id == id);
+        return b ? b.name : '—';
     }
-    tbody.innerHTML = currentItems.map((item, i) => `
-        <tr>
-            <td>${i + 1}</td>
-            <td>Block #${item.blockId}</td>
-            <td class="amount">€ ${item.price.toFixed(2)}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="removeItem(${i})">Remove</button></td>
-        </tr>
-    `).join('');
-}
 
-function updateTotal() {
-    const total = currentItems.reduce((sum, item) => sum + item.price, 0);
-    document.getElementById('totalDisplay').textContent = `€ ${total.toFixed(2)}`;
-}
+    function getUserName(id) {
+        const u = users.find(u => u.id == id);
+        return u ? u.name : '—';
+    }
 
-async function saveInvoice() {
-    const date = document.getElementById('invoiceDate').value;
-    const buyerId = document.getElementById('invoiceBuyer').value;
-    const userId = document.getElementById('invoiceUser').value;
+    async function applyFilters() {
+        const userName = document.getElementById('filterUser').value.trim();
+        const buyerName = document.getElementById('filterBuyer').value.trim();
+        const dateFrom = document.getElementById('filterDateFrom').value;
+        const dateTo = document.getElementById('filterDateTo').value;
+        const minAmount = document.getElementById('filterMinAmount').value;
+        const maxAmount = document.getElementById('filterMaxAmount').value;
 
-    if (!date) { alert('Please select a date.'); return; }
-    if (!buyerId) { alert('Please select a buyer.'); return; }
-    if (!userId) { alert('Please select a user.'); return; }
-    if (currentItems.length === 0) { alert('Please add at least one item.'); return; }
+        const params = new URLSearchParams();
+        if (userName) params.append('userName', userName);
+        if (buyerName) params.append('buyerName', buyerName);
+        if (dateFrom) params.append('dateFrom', dateFrom);
+        if (dateTo) params.append('dateTo', dateTo);
+        if (minAmount) params.append('minAmount', minAmount);
+        if (maxAmount) params.append('maxAmount', maxAmount);
 
-    const total = currentItems.reduce((sum, item) => sum + item.price, 0);
-    const items = currentItems.map((item, i) => ({
-        itemNo: i + 1,
-        blockId: item.blockId,
-        price: item.price
-    }));
+        const hasFilters = [...params].length > 0;
+        const url = hasFilters ? `/invoices/search?${params}` : '/invoices';
 
-    try {
-        if (editingInvoiceId) {
-            await fetch(`/invoices/${editingInvoiceId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    invoice: {
-                        id: editingInvoiceId,
+        const res = await fetch(url);
+        const data = await res.json();
+        renderTable(data);
+    }
+
+    function clearFilters() {
+        document.getElementById('filterUser').value = '';
+        document.getElementById('filterBuyer').value = '';
+        document.getElementById('filterDateFrom').value = '';
+        document.getElementById('filterDateTo').value = '';
+        document.getElementById('filterMinAmount').value = '';
+        document.getElementById('filterMaxAmount').value = '';
+        renderTable(invoices);
+    }
+
+    async function openCreateModal() {
+        await loadModalData();
+        editingInvoiceId = null;
+        currentItems = [];
+        document.getElementById('modalTitle').textContent = 'New Invoice';
+        document.getElementById('invoiceDate').value = '';
+        document.getElementById('invoiceBuyer').value = '';
+        document.getElementById('invoiceUser').value = '';
+        renderItems();
+        updateTotal();
+        document.getElementById('invoiceModal').classList.add('active');
+    }
+
+    async function openEditModal(id) {
+        await loadModalData();
+        editingInvoiceId = id;
+        document.getElementById('modalTitle').textContent = `Edit Invoice #${id}`;
+
+        const res = await fetch(`/invoices/${id}`);
+        const inv = await res.json();
+
+        document.getElementById('invoiceDate').value = inv.date ? inv.date.substring(0, 10) : '';
+        document.getElementById('invoiceBuyer').value = inv.buyerId;
+        document.getElementById('invoiceUser').value = inv.userId;
+
+        currentItems = inv.items ? inv.items.map(item => ({
+            blockId: item.blockId,
+            price: item.price
+        })) : [];
+
+        renderItems();
+        updateTotal();
+        document.getElementById('invoiceModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('invoiceModal').classList.remove('active');
+    }
+
+    const PRICES = {
+        'A': { '1': 200, '2': 190, '3': 180 },
+        'B': { '1': 160, '2': 150, '3': 140 },
+        'C': { '1': 120, '2': 110, '3': 100 }
+    };
+
+    function calculatePrice(block) {
+        const pricePerTon = PRICES[block.qualityClass]?.[block.category] ?? 100;
+        return Math.round(pricePerTon * block.mass * 100) / 100;
+    }
+
+    async function loadBlocks() {
+        const res = await fetch('/blocks');
+        blocks = await res.json();
+        renderBlocksTable();
+    }
+
+    function renderBlocksTable() {
+        const tbody = document.getElementById('blocksTableBody');
+        if (!blocks || blocks.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#a0a0b0; padding:16px;">No blocks available.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = blocks.map(b => {
+            const price = calculatePrice(b);
+            return `
+                <tr style="cursor:pointer;" onmouseover="this.style.background='rgba(233,69,96,0.08)'" onmouseout="this.style.background=''">
+                    <td>#${b.id}</td>
+                    <td>${b.length} × ${b.width} × ${b.height}</td>
+                    <td>${(b.mass / 1000).toFixed(2)}</td>
+                    <td>${b.qualityClass}</td>
+                    <td>${b.category}</td>
+                    <td class="amount">€ ${price.toFixed(2)}</td>
+                    <td><button class="btn btn-success btn-sm" onclick="addItem(${b.id}, ${price})">+ Add</button></td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function addItem(blockId, price) {
+        const alreadyAdded = currentItems.find(i => i.blockId === blockId);
+        if (alreadyAdded) {
+            alert('This block is already added to the invoice.');
+            return;
+        }
+        currentItems.push({ blockId, price });
+        renderItems();
+        updateTotal();
+    }
+
+    function removeItem(index) {
+        currentItems.splice(index, 1);
+        renderItems();
+        updateTotal();
+    }
+
+    function renderItems() {
+        const tbody = document.getElementById('itemsTable');
+        if (currentItems.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#a0a0b0;padding:20px;">No items added yet.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = currentItems.map((item, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>Block #${item.blockId}</td>
+                <td class="amount">€ ${item.price.toFixed(2)}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="removeItem(${i})">Remove</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function updateTotal() {
+        const total = currentItems.reduce((sum, item) => sum + item.price, 0);
+        document.getElementById('totalDisplay').textContent = `€ ${total.toFixed(2)}`;
+    }
+
+    async function saveInvoice() {
+        const date = document.getElementById('invoiceDate').value;
+        const buyerId = document.getElementById('invoiceBuyer').value;
+        const userId = document.getElementById('invoiceUser').value;
+
+        if (!date) { alert('Please select a date.'); return; }
+        if (!buyerId) { alert('Please select a buyer.'); return; }
+        if (!userId) { alert('Please select a user.'); return; }
+        if (currentItems.length === 0) { alert('Please add at least one item.'); return; }
+
+        const total = currentItems.reduce((sum, item) => sum + item.price, 0);
+        const items = currentItems.map((item, i) => ({
+            itemNo: i + 1,
+            blockId: item.blockId,
+            price: item.price
+        }));
+
+        try {
+            if (editingInvoiceId) {
+                await fetch(`/invoices/${editingInvoiceId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        invoice: {
+                            id: editingInvoiceId,
+                            date,
+                            totalAmount: total,
+                            userId: parseInt(userId),
+                            buyerId: parseInt(buyerId)
+                        },
+                        items
+                    })
+                });
+            } else {
+                await fetch('/invoices', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: null,
                         date,
                         totalAmount: total,
                         userId: parseInt(userId),
-                        buyerId: parseInt(buyerId)
-                    },
-                    items
-                })
-            });
-        } else {
-            await fetch('/invoices', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: null,
-                    date,
-                    totalAmount: total,
-                    userId: parseInt(userId),
-                    buyerId: parseInt(buyerId),
-                    items
-                })
-            });
+                        buyerId: parseInt(buyerId),
+                        items
+                    })
+                });
+            }
+
+            closeModal();
+            await loadInvoices();
+
+        } catch (err) {
+            alert('Error saving invoice. Please try again.');
         }
-
-        closeModal();
-        await loadInvoices();
-
-    } catch (err) {
-        alert('Error saving invoice. Please try again.');
     }
-}
 
-init();
+    init();
 </script>
 
 </body>

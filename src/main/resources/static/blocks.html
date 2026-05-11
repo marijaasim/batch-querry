@@ -306,15 +306,14 @@
     if (!user) window.location.href = '/login.html';
 
     const PRICES = {
-        'A': { '1': 200, '2': 180, '3': 160 },
-        'B': { '1': 160, '2': 140, '3': 120 },
-        'C': { '1': 120, '2': 100, '3': 80 }
+        'A': { '1': 200, '2': 190, '3': 180 },
+        'B': { '1': 160, '2': 150, '3': 140 },
+        'C': { '1': 120, '2': 110, '3': 100 }
     };
 
     function calculatePrice(block) {
         const pricePerTon = PRICES[block.qualityClass]?.[block.category] ?? 100;
-        const massInTons = block.mass / 1000;
-        return Math.round(pricePerTon * massInTons * 100) / 100;
+        return Math.round(pricePerTon * block.mass * 100) / 100;
     }
 
     let blocks = [];
@@ -336,8 +335,8 @@
             return;
         }
         tbody.innerHTML = data.map(b => {
-            const volume = (b.length * b.width * b.height).toFixed(2);
-            const massInTons = (b.mass / 1000).toFixed(2);
+            const volumeM3 = ((b.length * b.width * b.height) / 1_000_000).toFixed(2);
+            const massInTons = (b.mass).toFixed(2);
             const price = calculatePrice(b);
             return `
                 <tr>
@@ -345,8 +344,8 @@
                     <td>${b.length}</td>
                     <td>${b.width}</td>
                     <td>${b.height}</td>
-                    <td class="volume">${volume}</td>
-                    <td>${massInTons}</td>
+                    <td class="volume">${volumeM3} m³</td>
+                    <td>${massInTons} t</td>
                     <td><span class="badge badge-${b.qualityClass.toLowerCase()}">${b.qualityClass}</span></td>
                     <td><span class="category-badge">Cat. ${b.category}</span></td>
                     <td class="price">€ ${price.toFixed(2)}</td>

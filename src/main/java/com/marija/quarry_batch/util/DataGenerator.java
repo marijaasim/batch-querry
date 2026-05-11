@@ -44,10 +44,12 @@ public class DataGenerator {
         String[] categories = {"1", "2", "3"};
 
         for (int i = 0; i < count; i++) {
-            double length = 0.5 + random.nextDouble() * 4.5;
-            double width  = 0.5 + random.nextDouble() * 3.5;
-            double height = 0.3 + random.nextDouble() * 2.5;
-            double mass   = length * width * height * 2700;
+            double length = 150 + random.nextDouble() * 350; // 150-500 cm
+            double width  = 100 + random.nextDouble() * 250; // 100-350 cm
+            double height = 80  + random.nextDouble() * 170; // 80-250 cm
+
+            double volumeM3 = (length * width * height) / 1_000_000.0;
+            double mass     = volumeM3 * 2.75;
 
             jdbcTemplate.update(
                     "INSERT INTO block (length, width, height, mass, quality_class, category) VALUES (?, ?, ?, ?, ?, ?)",
@@ -117,6 +119,20 @@ public class DataGenerator {
         jdbcTemplate.update("DELETE FROM invoice_item");
         jdbcTemplate.update("DELETE FROM invoice");
         jdbcTemplate.update("DELETE FROM buyer");
+    }
+
+    public void clearAll() {
+        jdbcTemplate.update("DELETE FROM invoice_item_archive");
+        jdbcTemplate.update("DELETE FROM invoice_archive");
+        jdbcTemplate.update("DELETE FROM monthly_report");
+        jdbcTemplate.update("DELETE FROM invoice_item");
+        jdbcTemplate.update("DELETE FROM invoice");
+        jdbcTemplate.update("DELETE FROM block");
+        jdbcTemplate.update("DELETE FROM buyer");
+
+        jdbcTemplate.execute("DROP TABLE IF EXISTS invoice_item_archive");
+        jdbcTemplate.execute("DROP TABLE IF EXISTS invoice_archive");
+        jdbcTemplate.execute("DROP TABLE IF EXISTS monthly_report");
     }
 
     private double round(double value) {
