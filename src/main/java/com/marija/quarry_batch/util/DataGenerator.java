@@ -122,9 +122,6 @@ public class DataGenerator {
     }
 
     public void clearAll() {
-        jdbcTemplate.update("DELETE FROM invoice_item_archive");
-        jdbcTemplate.update("DELETE FROM invoice_archive");
-        jdbcTemplate.update("DELETE FROM monthly_report");
         jdbcTemplate.update("DELETE FROM invoice_item");
         jdbcTemplate.update("DELETE FROM invoice");
         jdbcTemplate.update("DELETE FROM block");
