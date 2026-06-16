@@ -1,16 +1,21 @@
 package com.marija.quarry_batch.controller;
 
 import com.marija.quarry_batch.util.DataGenerator;
+import com.marija.quarry_batch.util.MemoryPeakTracker;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/generate")
 public class DataGeneratorController {
 
     private final DataGenerator dataGenerator;
+    private final MemoryPeakTracker memoryPeakTracker;
 
-    public DataGeneratorController(DataGenerator dataGenerator) {
+    public DataGeneratorController(DataGenerator dataGenerator, MemoryPeakTracker memoryPeakTracker) {
         this.dataGenerator = dataGenerator;
+        this.memoryPeakTracker = memoryPeakTracker;
     }
 
     @PostMapping("/buyers")
@@ -35,6 +40,20 @@ public class DataGeneratorController {
     public String clearAll() {
         dataGenerator.clearAll();
         return "All data cleared.";
+    }
+
+    @GetMapping("/memory-peak")
+    public Map<String, Object> getPeak() {
+        long peak = memoryPeakTracker.getPeakHeapUsed();
+        return Map.of(
+                "peakHeapUsedBytes", peak,
+                "peakHeapUsedMB", peak / 1_048_576
+        );
+    }
+
+    @PostMapping("/memory-peak/reset")
+    public void reset() {
+        memoryPeakTracker.reset();
     }
 
 }

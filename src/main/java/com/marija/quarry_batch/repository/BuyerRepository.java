@@ -57,7 +57,7 @@ public class BuyerRepository {
             b.setPhoneNumber(rs.getString("phone_number"));
             b.setEmail(rs.getString("email"));
             b.setPersonalId(rs.getString("personal_id"));
-            b.setBuyerType("INDIVIDUAL");  // dodaj ovo
+            b.setBuyerType("INDIVIDUAL");
             return b;
         } else if ("COMPANY".equalsIgnoreCase(type)) {
             CompanyBuyer b = new CompanyBuyer();
@@ -66,7 +66,7 @@ public class BuyerRepository {
             b.setPhoneNumber(rs.getString("phone_number"));
             b.setEmail(rs.getString("email"));
             b.setTaxId(rs.getString("tax_id"));
-            b.setBuyerType("COMPANY");  // dodaj ovo
+            b.setBuyerType("COMPANY");
             return b;
         } else {
             throw new RuntimeException("Unknown buyer type: " + type);
